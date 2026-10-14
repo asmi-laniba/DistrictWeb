@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if edit_mode %}Edit {{ form.instance.name }}{% else %}Add New Project{% endif %} | Smart District+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'department_list' %}">Departments</a></li>
+                    {% if edit_mode %}
+                        <li class="breadcrumb-item"><a href="{% url 'department_detail' form.instance.department.name %}">{{ form.instance.department.get_name_display }}</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'project_detail' form.instance.pk %}">{{ form.instance.name }}</a></li>
+                        <li class="breadcrumb-item active">Edit</li>
+                    {% else %}
+                        <li class="breadcrumb-item active">New Project</li>
+                    {% endif %}
+                </ol>
+            </nav>
+
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white p-4 border-0 rounded-top">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-white bg-opacity-25 rounded-circle p-3 me-3">
+                            <i class="fa-solid {% if edit_mode %}fa-pen-to-square{% else %}fa-plus{% endif %} fs-3"></i>
+                        </div>
+                        <div>
+                            <h2 class="fw-bold mb-0">{% if edit_mode %}Edit Project{% else %}Add New Project{% endif %}</h2>
+                            <p class="mb-0 text-white-50">Please fill in the details below to {% if edit_mode %}update the{% else %}create a new{% endif %} project.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form method="post" class="needs-validation">
+                        {% csrf_token %}
+                        
+                        <div class="row g-3">
+                            <div class="col-md-12 mb-3">
+                                {{ form.name|as_crispy_field }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.department|as_crispy_field }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.status|as_crispy_field }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.budget|as_crispy_field }}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                {{ form.budget_used|as_crispy_field }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.start_date|as_crispy_field }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.end_date|as_crispy_field }}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                {{ form.progress|as_crispy_field }}
+                            </div>
+                            
+                            <div class="col-md-12 mb-4">
+                                {{ form.description|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            {% if edit_mode %}
+                                <a href="{% url 'project_detail' form.instance.pk %}" class="btn btn-light px-4 me-md-2">Cancel</a>
+                            {% else %}
+                                <a href="{% url 'department_list' %}" class="btn btn-light px-4 me-md-2">Cancel</a>
+                            {% endif %}
+                            <button type="submit" class="btn btn-primary px-5 fw-bold">
+                                <i class="fa-solid fa-save me-2"></i>{% if edit_mode %}Update Project{% else %}Save Project{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control, .form-select {
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #dee2e6;
+        transition: all 0.2s ease;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(26, 35, 126, 0.1);
+    }
+    .card {
+        overflow: hidden;
+    }
+</style>
+{% endblock %}

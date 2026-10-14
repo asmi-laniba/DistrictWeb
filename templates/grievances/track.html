@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Track Grievance | Smart District+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card p-4 shadow-sm border-0 mb-4">
+                <h3 class="fw-bold mb-3">Track Your Complaint</h3>
+                <p class="text-muted">Enter your tracking ID to see the latest status of your grievance.</p>
+                <form method="get" class="d-flex">
+                    <input type="text" name="tracking_id" class="form-control me-2" placeholder="Example: 7B2A9C"
+                        required>
+                    <button type="submit" class="btn btn-primary">Track</button>
+                </form>
+            </div>
+
+            {% if complaint %}
+            <div class="card border-0 shadow-lg animate-fade-in">
+                <div class="card-header bg-primary text-white p-4 border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Complaint Status</h5>
+                        <span class="badge bg-white text-primary rounded-pill px-3">{{ complaint.tracking_id }}</span>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <h6 class="text-muted text-uppercase small fw-bold mb-1">Subject</h6>
+                        <h4 class="fw-bold">{{ complaint.subject }}</h4>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <h6 class="text-muted text-uppercase small fw-bold mb-1">Status</h6>
+                            <span
+                                class="badge bg-{% if complaint.status == 'resolved' %}success{% elif complaint.status == 'pending' %}warning{% else %}primary{% endif %} fs-6 px-3">
+                                {{ complaint.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="text-muted text-uppercase small fw-bold mb-1">Priority</h6>
+                            <span
+                                class="badge bg-{% if complaint.priority == 'critical' or complaint.priority == 'high' %}danger{% else %}info{% endif %} fs-6 px-3">
+                                {{ complaint.get_priority_display }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-muted text-uppercase small fw-bold mb-1">Submitted On</h6>
+                        <p class="mb-0">{{ complaint.created_at|date:"F d, Y - H:i" }}</p>
+                    </div>
+
+                    <div class="mb-0">
+                        <h6 class="text-muted text-uppercase small fw-bold mb-1">Description</h6>
+                        <p class="text-muted">{{ complaint.description }}</p>
+                    </div>
+                </div>
+                <div class="card-footer bg-light p-3 text-center border-0">
+                    <small>For further assistance, contact the {{ complaint.department.get_name_display }}
+                        department.</small>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

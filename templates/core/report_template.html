@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="title">Smart District+ Performance Report</div>
+        <div>Generated on: {{ date }}</div>
+    </div>
+
+    <h3>Departmental Summary</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Department</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dept in departments %}
+            <tr>
+                <td>{{ dept.get_name_display }}</td>
+                <td>{{ dept.description }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Active Projects</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Project Name</th>
+                <th>Status</th>
+                <th>Budget</th>
+                <th>Progress</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for project in projects %}
+            <tr>
+                <td>{{ project.name }}</td>
+                <td>{{ project.get_status_display }}</td>
+                <td>₹{{ project.budget }}</td>
+                <td>{{ project.progress }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Confidential Government Document - Smart District+ Platform
+    </div>
+</body>
+
+</html>

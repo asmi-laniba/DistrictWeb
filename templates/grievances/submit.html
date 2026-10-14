@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Submit Grievance | Smart District+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card p-4 shadow border-0">
+                <div class="mb-4">
+                    <h2 class="fw-bold"><i class="fa-solid fa-bullhorn text-primary me-2"></i>Lodge a Complaint</h2>
+                    <p class="text-muted">Fill out the form below to register your grievance. We will provide a tracking
+                        ID for monitoring the status.</p>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">{{ form.citizen_name|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.citizen_email|as_crispy_field }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">{{ form.department|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.priority|as_crispy_field }}</div>
+                    </div>
+                    {{ form.subject|as_crispy_field }}
+                    {{ form.description|as_crispy_field }}
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">Submit Grievance</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard | Smart District+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 bg-light">
+    <div class="row mb-4 animate-fade-in">
+        <div class="col-md-8">
+            <h2 class="fw-bold mb-0">District Overview</h2>
+            <p class="text-muted">Real-time performance and predictive monitoring system.</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'generate_report' %}" class="btn btn-primary" target="_blank">
+                <i class="fa-solid fa-file-pdf me-2"></i>Generate PDF Report
+            </a>
+        </div>
+
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card kpi-card border-primary h-100">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase small fw-bold">Active Projects</h6>
+                    <h3 class="fw-bold mb-0">{{ projects_count }}</h3>
+                    <div class="mt-2 small">
+                        <span class="text-success"><i class="fa-solid fa-check me-1"></i>{{ completed_projects }}
+                            Completed</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card border-warning h-100">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase small fw-bold">Critical Alerts</h6>
+                    <h3 class="fw-bold mb-0 text-warning">{{ delayed_projects }}</h3>
+                    <div class="mt-2 small">
+                        <span class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i>Requires
+                            Attention</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card border-info h-100">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase small fw-bold">Grievances</h6>
+                    <h3 class="fw-bold mb-0">{{ complaints_count }}</h3>
+                    <div class="mt-2 small">
+                        <span class="text-primary"><i class="fa-solid fa-clock me-1"></i>{{ pending_complaints }}
+                            Pending</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card border-success h-100">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase small fw-bold">Budget Utilization</h6>
+                    <h3 class="fw-bold mb-0">{% widthratio total_used total_budget 100 %}%</h3>
+                    <div class="progress mt-2" style="height: 6px;">
+                        <div class="progress-bar bg-success" role="progressbar"
+                            style="width: {% widthratio total_used total_budget 100 %}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Analytics Chart -->
+        <div class="col-md-8">
+            <div class="card h-100 p-4">
+                <h5 class="fw-bold mb-4">Departmental Performance Index</h5>
+                <div style="position: relative; height: 350px;">
+                    <canvas id="deptChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Right Sidebar (Alerts & Notifications) -->
+        <div class="col-md-4">
+            <div class="card h-100 p-3">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">Live Alerts</h5>
+                    <span class="badge bg-danger rounded-pill">{{ recent_alerts|length }} New</span>
+                </div>
+                <div class="list-group list-group-flush overflow-auto" style="max-height: 400px;">
+                    {% for alert in recent_alerts %}
+                    <div class="list-group-item border-0 border-bottom px-0 py-3">
+                        <div class="d-flex w-100 justify-content-between mb-1">
+                            <h6 class="mb-1 fw-bold text-{{ alert.severity }}">{{ alert.title }}</h6>
+                            <small class="text-muted">{{ alert.created_at|timesince }}</small>
+                        </div>
+                        <p class="small text-muted mb-0">{{ alert.message }}</p>
+                    </div>
+                    {% empty %}
+                    <p class="text-center text-muted py-5">No recent alerts.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions / Department Grid -->
+    <div class="row g-4">
+        <div class="col-md-12">
+            <div class="card p-4">
+                <h5 class="fw-bold mb-4">Managed Departments</h5>
+                <div class="row g-3">
+                    {% for dept in depts %}
+                    <div class="col-md-2 text-center">
+                        <div class="p-3 bg-light rounded-4 border">
+                            <i
+                                class="fa-solid fa-{% if dept.name == 'health' %}heart-pulse{% elif dept.name == 'education' %}graduation-cap{% elif dept.name == 'revenue' %}coins{% elif dept.name == 'public_works' %}road{% else %}shield-halved{% endif %} fs-3 text-primary mb-2"></i>
+                            <h6 class="mb-0 small fw-bold">{{ dept.get_name_display }}</h6>
+                            <small class="text-muted">{{ dept.proj_count }} Projects</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chartData = {
+        labels: {{ chart_labels|safe }},
+        datasets: [{
+            label: 'Resource Utilization (%)',
+            data: {{ chart_utilization|safe }},
+            backgroundColor: 'rgba(26, 35, 126, 0.7)',
+            borderRadius: 8,
+            borderSkipped: false,
+        }, {
+            label: 'Target KPI (%)',
+            data: {{ kpi_target|safe }},
+            type: 'line',
+            borderColor: '#ffd600',
+            borderWidth: 3,
+            pointStyle: 'circle',
+            pointRadius: 4,
+            pointBackgroundColor: '#ffd600',
+            fill: false,
+            tension: 0.1
+        }]
+    };
+
+    const ctx = document.getElementById('deptChart');
+    if (ctx) {
+        new Chart(ctx.getContext('2d'), {
+            type: 'bar',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            font: { family: 'Inter', size: 12, weight: '500' }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(26, 35, 126, 0.9)',
+                        titleFont: { size: 14, weight: 'bold' },
+                        padding: 12,
+                        cornerRadius: 8,
+                        displayColors: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: {
+                            callback: function(value) { return value + '%'; },
+                            font: { family: 'Inter' }
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: 'Inter', weight: '500' } }
+                    }
+                },
+                animation: {
+                    duration: 1500,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

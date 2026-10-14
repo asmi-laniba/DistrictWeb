@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load math_filters %}
+
+{% block title %}{{ project.name }} | Smart District+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'department_list' %}">Departments</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'department_detail' project.department.name %}">{{ project.department.get_name_display }}</a></li>
+                    <li class="breadcrumb-item active">{{ project.name }}</li>
+                </ol>
+            </nav>
+            <h1 class="fw-bold display-5">{{ project.name }}</h1>
+            <div class="d-flex align-items-center gap-3 mt-2">
+                <span class="badge {% if project.status == 'completed' %}bg-success{% elif project.status == 'delayed' %}bg-danger{% elif project.status == 'in_progress' %}bg-primary{% else %}bg-secondary{% endif %} fs-6 rounded-pill px-4">
+                    {{ project.get_status_display }}
+                </span>
+                <span class="text-muted"><i class="fa-solid fa-calendar-days me-2"></i>{{ project.start_date|date:"M d, Y" }} - {{ project.end_date|date:"M d, Y" }}</span>
+            </div>
+        </div>
+        <div class="col-md-4 text-md-end pt-4">
+            {% if user.role == 'collector' or user.role == 'dept_head' %}
+            <a href="{% url 'edit_project' project.pk %}" class="btn btn-outline-primary me-2"><i class="fa-solid fa-pen-to-square me-2"></i>Edit Project</a>
+            {% endif %}
+            <a href="{% url 'department_detail' project.department.name %}" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Info -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">Description</h5>
+                    <p class="text-secondary lh-lg" style="font-size: 1.1rem;">
+                        {{ project.description|default:"No description available for this project." }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4">Financial Overview</h5>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 text-center">
+                                <small class="text-muted text-uppercase fw-bold">Total Budget</small>
+                                <div class="h3 fw-bold mt-1 text-primary">₹{{ project.budget|floatformat:2 }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 text-center">
+                                <small class="text-muted text-uppercase fw-bold">Budget Used</small>
+                                <div class="h3 fw-bold mt-1 text-danger">₹{{ project.budget_used|floatformat:2 }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="fw-bold">Budget Utilization</span>
+                            <span class="text-muted">
+                                {% with budget_used=project.budget_used total=project.budget %}
+                                    {% if total > 0 %}
+                                        {{ budget_used|divide:total|multiply:100|floatformat:1 }}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                {% endwith %}
+                            </span>
+                        </div>
+                        <div class="progress" style="height: 12px;">
+                            <div class="progress-bar bg-warning" role="progressbar" 
+                                 style="width: {% if project.budget > 0 %}{{ project.budget_used|divide:project.budget|multiply:100 }}{% else %}0{% endif %}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Info -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4 bg-primary text-white overflow-hidden position-relative">
+                <div class="card-body p-4 position-relative" style="z-index: 2;">
+                    <h5 class="fw-bold mb-4">Project Progress</h5>
+                    <div class="text-center mb-4">
+                        <div class="display-3 fw-bold">{{ project.progress }}%</div>
+                        <div class="text-white-50">Currently Completed</div>
+                    </div>
+                    <div class="progress bg-white bg-opacity-25" style="height: 8px;">
+                        <div class="progress-bar bg-white" role="progressbar" style="width: {{ project.progress }}%"></div>
+                    </div>
+                </div>
+                <!-- Subtle background decoration -->
+                <i class="fa-solid fa-chart-line position-absolute" style="bottom: -20px; right: -10px; font-size: 10rem; opacity: 0.1; transform: rotate(-15deg);"></i>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">Quick Details</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Department</span>
+                            <span class="fw-bold">{{ project.department.get_name_display }}</span>
+                        </li>
+                        <li class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Start Date</span>
+                            <span class="fw-bold">{{ project.start_date|date:"F d, Y" }}</span>
+                        </li>
+                        <li class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">End Date</span>
+                            <span class="fw-bold">{{ project.end_date|date:"F d, Y" }}</span>
+                        </li>
+                        <li class="d-flex justify-content-between py-2">
+                            <span class="text-muted">Project ID</span>
+                            <span class="fw-bold text-uppercase">#PRJ-{{ project.pk|stringformat:"04d" }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
